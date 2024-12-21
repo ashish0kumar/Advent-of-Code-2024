@@ -1,116 +1,93 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+char a[105][105];
+
+pair<int, int> getDir(char c)
+{
+    if (c == '^')
+        return {-1, 0};
+    if (c == 'v')
+        return {1, 0};
+    if (c == '>')
+        return {0, 1};
+    if (c == '<')
+        return {0, -1};
+    assert(false);
+}
+
 int main()
 {
-    vector<string> board;
-    vector<char> actions;
-    int ox = -1, oy = -1;
-    bool inBoard = true;
-    string line;
-
-    while (getline(cin, line))
+    int H, W;
+    string moves;
+    for (int row = 0; true; row++)
     {
-        if (line.empty())
+        cin >> a[row];
+        W = strlen(a[row]);
+        if (W == 0 || W == 1 || (row >= 1 && W != (int)strlen(a[row - 1])))
         {
-            inBoard = false;
+            H = row;
+            W = strlen(a[row - 1]);
+            moves += string(a[row]);
+            while (cin >> a[row])
+                moves += string(a[row]);
+            break;
+        }
+    }
+
+    pair<int, int> me{-1, -1};
+    for (int row = 0; row < H; row++)
+        for (int col = 0; col < W; col++)
+            if (a[row][col] == '@')
+            {
+                me = {row, col};
+                a[row][col] = '.';
+            }
+    assert(me.first != -1);
+
+    for (char move : moves)
+    {
+        pair<int, int> dir = getDir(move);
+        vector<pair<int, int>> boxes;
+        int row = me.first;
+        int col = me.second;
+        bool emptySpace = false;
+
+        while (true)
+        {
+            row += dir.first;
+            col += dir.second;
+
+            if (a[row][col] == '#')
+                break;
+
+            if (a[row][col] == '.')
+            {
+                emptySpace = true;
+                break;
+            }
+            assert(a[row][col] == 'O');
+            boxes.emplace_back(row, col);
+        }
+
+        if (!emptySpace)
             continue;
-        }
-        if (inBoard)
-        {
-            board.push_back(line);
-        }
-        else
-        {
-            for (char c : line)
-            {
-                actions.push_back(c);
-            }
-        }
-    }
 
-    for (int x = 0; x < board.size(); x++)
-    {
-        for (int y = 0; y < board[0].size(); y++)
-        {
-            if (board[x][y] == '@')
-            {
-                ox = x;
-                oy = y;
-            }
-        }
-    }
+        me.first += dir.first;
+        me.second += dir.second;
 
-    int dx, dy, nx, ny, sx, sy;
-    for (char a : actions)
-    {
-        if (a == '>')
-        {
-            dx = 0;
-            dy = 1;
-        }
-        else if (a == '^')
-        {
-            dx = -1;
-            dy = 0;
-        }
-        else if (a == '<')
-        {
-            dx = 0;
-            dy = -1;
-        }
-        else if (a == 'v')
-        {
-            dx = 1;
-            dy = 0;
-        }
-        nx = ox + dx;
-        ny = oy + dy;
+        for (pair<int, int> box : boxes)
+            a[box.first][box.second] = '.';
 
-        if (board[nx][ny] == '.')
-        {
-            board[nx][ny] = '@';
-            board[ox][oy] = '.';
-            ox = nx;
-            oy = ny;
-        }
-        else if (board[nx][ny] == 'O')
-        {
-            sx = nx;
-            sy = ny;
-            while (board[sx][sy] == 'O')
-            {
-                sx += dx;
-                sy += dy;
-            }
-            if (board[sx][sy] == '#')
-            {
-                continue;
-            }
-            else
-            {
-                board[sx][sy] = 'O';
-                board[nx][ny] = '@';
-                board[ox][oy] = '.';
-                ox = nx;
-                oy = ny;
-            }
-        }
+        for (pair<int, int> box : boxes)
+            a[box.first + dir.first][box.second + dir.second] = 'O';
     }
 
     int res = 0;
-    for (int x = 0; x < board.size(); x++)
-    {
-        for (int y = 0; y < board[0].size(); y++)
-        {
-            if (board[x][y] == 'O')
-            {
-                res += 100 * x + y;
-            }
-        }
-    }
+    for (int row = 0; row < H; row++)
+        for (int col = 0; col < W; col++)
+            if (a[row][col] == 'O')
+                res += 100 * row + col;
 
     cout << res << endl;
-
-    return 0;
 }
