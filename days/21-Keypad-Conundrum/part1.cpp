@@ -135,7 +135,7 @@ int main()
     {
         string s;
         cin >> s;
-        // s = "029A"; 
+        // s = "029A";
         int x = solve(s);
         s.pop_back();
         res += x * stoi(s);
